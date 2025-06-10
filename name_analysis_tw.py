@@ -42,9 +42,28 @@ def send_email(html_body):
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.send_message(msg)
-        logging.info("✅ 郵件已成功發送")
+        logging.info("✅ 郵件發送成功")
     except Exception as e:
         logging.error("❌ 郵件發送失敗: %s", str(e))
+
+def generate_child_metrics_tw():
+    return [
+        {
+            "title": "學習偏好",
+            "labels": ["視覺型", "聽覺型", "動手型"],
+            "values": [random.randint(50, 70), random.randint(25, 40), random.randint(10, 30)]
+        },
+        {
+            "title": "學習投入",
+            "labels": ["每日複習", "小組學習", "自主學習"],
+            "values": [random.randint(40, 60), random.randint(20, 40), random.randint(30, 50)]
+        },
+        {
+            "title": "學習信心",
+            "labels": ["數學", "閱讀", "專注力"],
+            "values": [random.randint(50, 85), random.randint(40, 70), random.randint(30, 65)]
+        }
+    ]
 
 def generate_email_charts(metrics):
     def make_bar_html(title, labels, values, color):
@@ -92,15 +111,11 @@ def analyze_name():
             return jsonify({"error": f"❌ 無法辨識的月份格式: {dob_month}"}), 400
 
         birthdate = datetime(int(dob_year), month_num, int(dob_day))
-        age = datetime.now().year - birthdate.year
+        today = datetime.today()
+        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
         gender_label = CHINESE_GENDER.get(gender, "孩子")
 
-        metrics = [
-            {"title": "學習偏好", "labels": ["視覺型", "聽覺型", "動手型"], "values": [63, 27, 12]},
-            {"title": "學習投入", "labels": ["每日複習", "小組學習", "自主學習"], "values": [58, 31, 46]},
-            {"title": "學習信心", "labels": ["數學", "閱讀", "專注力"], "values": [76, 55, 48]},
-        ]
-
+        metrics = generate_child_metrics_tw()
         visual, auditory, kinesthetic = metrics[0]['values']
         review, group, independent = metrics[1]['values']
         math, reading, focus = metrics[2]['values']
